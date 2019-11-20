@@ -4,6 +4,7 @@ import {ActivityIndicator} from 'react-native';
 import api from '../../services/api';
 
 import { Container, Header, Avatar, Name, Bio, Stars, Starred, OwnerAvatar, Info, Title, Author } from './styles';
+import { StackViewTransitionConfigs } from 'react-navigation-stack';
 
 export default class User extends Component {
     static navigationOptions = ({navigation}) => ({
@@ -18,7 +19,9 @@ export default class User extends Component {
 
     state = {
         stars: [],
-        loading: false
+        loading: false,
+        userLogin: '',
+        page: 2,
     }
 
     async componentDidMount(){
@@ -27,9 +30,31 @@ export default class User extends Component {
         const user = navigation.getParam('user');
         const response = await api.get(`users/${user.login}/starred`);
 
-        this.setState({stars: response.data, loading: false})
+
+        this.setState({stars: response.data, loading: false, userLogin: user.login })
 
     }
+
+    loadMore = async () => {
+        const { userLogin, page, stars, loading } = this.state;
+
+
+        const response = await api.get(`users/${userLogin}/starred`, {
+            params: {
+                page : page
+            }
+        });
+
+
+
+        this.setState({
+            stars: [...stars, ...response.data],
+            page: page + 1
+        });
+
+
+    }
+
 
     render(){
         const {navigation} = this.props;
@@ -44,6 +69,8 @@ export default class User extends Component {
                     <Bio>{user.bio}</Bio>
                 </Header>
                 {loading ? (<ActivityIndicator />) : ( <Stars
+                    onEndReachedThreshold={0.2}
+                    onEndReached={this.loadMore}
                     data={stars}
                     keyExtractor = {star => String(star.id)}
                     renderItem={({item}) => (
