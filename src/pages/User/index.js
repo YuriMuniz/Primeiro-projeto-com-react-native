@@ -22,6 +22,7 @@ export default class User extends Component {
         loading: false,
         userLogin: '',
         page: 2,
+        refreshing: false
     }
 
     async componentDidMount(){
@@ -36,7 +37,7 @@ export default class User extends Component {
     }
 
     loadMore = async () => {
-        const { userLogin, page, stars, loading } = this.state;
+        const { userLogin, page, stars} = this.state;
 
 
         const response = await api.get(`users/${userLogin}/starred`, {
@@ -52,6 +53,20 @@ export default class User extends Component {
             page: page + 1
         });
 
+
+    }
+
+    refreshList = async () => {
+        const {userLogin} = this.state;
+
+        this.setState({refreshing: true});
+
+        const response = await api.get(`users/${userLogin}/starred`);
+
+        this.setState({
+            stars: response.data,
+            refreshing: false
+        })
 
     }
 
@@ -71,6 +86,8 @@ export default class User extends Component {
                 {loading ? (<ActivityIndicator />) : ( <Stars
                     onEndReachedThreshold={0.2}
                     onEndReached={this.loadMore}
+                    onRefresh={this.refreshList}
+                    refreshing={this.state.refreshing}
                     data={stars}
                     keyExtractor = {star => String(star.id)}
                     renderItem={({item}) => (
