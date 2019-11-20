@@ -5,6 +5,7 @@ import api from '../../services/api';
 
 import { Container, Header, Avatar, Name, Bio, Stars, Starred, OwnerAvatar, Info, Title, Author } from './styles';
 import { StackViewTransitionConfigs } from 'react-navigation-stack';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 export default class User extends Component {
     static navigationOptions = ({navigation}) => ({
@@ -56,6 +57,12 @@ export default class User extends Component {
 
     }
 
+    handleNavigate= (repository) => {
+        const {navigation} = this.props;
+        navigation.navigate('Repository', {repository});
+    }
+
+
     refreshList = async () => {
         const {userLogin} = this.state;
 
@@ -72,8 +79,8 @@ export default class User extends Component {
 
 
     render(){
-        const {navigation} = this.props;
         const {stars, loading} = this.state;
+        const {navigation} = this.props;
         const user = navigation.getParam('user');
 
         return (
@@ -91,7 +98,8 @@ export default class User extends Component {
                     data={stars}
                     keyExtractor = {star => String(star.id)}
                     renderItem={({item}) => (
-                        <Starred>
+                        <TouchableWithoutFeedback onPress={() => this.handleNavigate(item)}>
+                        <Starred >
 
                             <OwnerAvatar source={{uri: item.owner.avatar_url}} />
                             <Info>
@@ -99,6 +107,7 @@ export default class User extends Component {
                                 <Author>{item.owner.login}</Author>
                             </Info>
                         </Starred>
+                        </TouchableWithoutFeedback>
                     )}
                 />)}
 
